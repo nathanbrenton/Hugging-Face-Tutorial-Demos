@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Hugging Face Tutorial Demos</title>
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="eyebrow">Hugging Face Tutorial Demos</p>
+      <h1>Local AI/ML Demo Platform</h1>
+      <p class="subtitle">
+        A self-hosted frontend and backend for practicing Hugging Face concepts one video at a time.
+      </p>
+    </header>
+
+    <section class="card">
+      <label for="demo-select">Select demo</label>
+      <select id="demo-select">
+        <option value="video-002-pipeline-function">002 - The pipeline function</option>
+      </select>
+    </section>
+
+    <section class="card" id="video-002-panel">
+      <h2>002 - The pipeline function</h2>
+
+      <p>
+        This demo sends one or more text inputs to a local FastAPI backend.
+        The backend uses Hugging Face's <code>pipeline("sentiment-analysis")</code>
+        function and returns structured prediction objects.
+      </p>
+
+      <label for="text-input">Texts to analyze</label>
+      <textarea id="text-input" rows="8">I love learning Hugging Face. This is starting to make sense.
+The setup was confusing and I got stuck for an hour.
+The model loaded successfully, but the results are just okay.</textarea>
+
+      <div class="actions">
+        <button id="run-demo-button">Analyze Text</button>
+        <button id="clear-button" class="secondary">Clear Output</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Result</h2>
+      <pre id="result-output">Run the demo to see results here.</pre>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

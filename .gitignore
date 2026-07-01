@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+backend/.venv/
+
+# Environment files
+.env
+backend/.env
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
+
+# Hugging Face / model caches
+.cache/
+models/
+backend/hf_home/
+
+# Local wheelhouses / offline assets
+backend/wheelhouse/

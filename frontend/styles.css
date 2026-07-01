@@ -1,0 +1,150 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: dark;
+  --page-bg: #050816;
+  --card-bg: #111827;
+  --card-border: #374151;
+  --text-main: #f9fafb;
+  --text-muted: #cbd5e1;
+  --text-soft: #9ca3af;
+  --accent: #facc15;
+  --accent-strong: #fde047;
+  --button-bg: #facc15;
+  --button-text: #111827;
+  --button-secondary-bg: #374151;
+  --button-secondary-text: #f9fafb;
+  --input-bg: #020617;
+  --input-border: #64748b;
+  --pre-bg: #020617;
+  --focus-ring: #facc15;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--page-bg);
+  color: var(--text-main);
+}
+
+.page {
+  width: min(960px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 40px 0;
+}
+
+.hero {
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--accent);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2.4rem;
+}
+
+h2 {
+  margin-top: 0;
+}
+
+.subtitle {
+  max-width: 720px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.card p {
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+code {
+  color: var(--accent-strong);
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+select,
+textarea {
+  width: 100%;
+  font: inherit;
+  color: var(--text-main);
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--input-bg);
+}
+
+select:focus,
+textarea:focus,
+button:focus {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+button {
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--button-bg);
+  color: var(--button-text);
+}
+
+button.secondary {
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+  border: 1px solid var(--card-border);
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+pre {
+  white-space: pre-wrap;
+  overflow-x: auto;
+  background: var(--pre-bg);
+  color: var(--text-main);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 16px;
+  min-height: 180px;
+}
