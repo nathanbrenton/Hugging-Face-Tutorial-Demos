@@ -2,7 +2,14 @@ from pydantic import BaseModel, Field
 from fastapi import APIRouter
 
 from app.core.config import settings
-from app.services.pipeline_service import analyze_sentiment, classify_zero_shot, fill_mask, generate_text
+from app.services.pipeline_service import (
+    analyze_sentiment,
+    classify_zero_shot,
+    extract_named_entities,
+    fill_mask,
+    generate_text,
+)
+
 
 router = APIRouter(
     prefix="/api/video-002/pipeline-function",
@@ -105,6 +112,33 @@ class FillMaskResponse(BaseModel):
     results: list[FillMaskItem]
 
 
+class NerRequest(BaseModel):
+    text: str = Field(
+        ...,
+        min_length=1,
+        description="Text from which named entities should be extracted.",
+    )
+
+
+class NerItem(BaseModel):
+    entity_group: str
+    score: float
+    word: str
+    start: int
+    end: int
+
+
+class NerResponse(BaseModel):
+    video: str
+    concept: str
+    task: str
+    model: str
+    text: str
+    results: list[NerItem]
+
+
+
+
 @router.post("/sentiment", response_model=SentimentResponse)
 def run_sentiment_analysis(payload: SentimentRequest) -> SentimentResponse:
     cleaned_texts = [text.strip() for text in payload.texts if text.strip()]
@@ -180,3 +214,22 @@ def run_fill_mask(payload: FillMaskRequest) -> FillMaskResponse:
         top_k=payload.top_k,
         results=results,
     )
+
+
+@router.post("/ner", response_model=NerResponse)
+def run_named_entity_recognition(payload: NerRequest) -> NerResponse:
+    cleaned_text = payload.text.strip()
+
+    results = extract_named_entities(cleaned_text)
+
+    return NerResponse(
+        video="002",
+        concept="pipeline",
+        task="ner",
+        model=settings.ner_model_id,
+        text=cleaned_text,
+        results=results,
+    )
+
+
+

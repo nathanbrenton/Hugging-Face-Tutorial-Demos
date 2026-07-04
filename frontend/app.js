@@ -30,6 +30,10 @@ const fillMaskTextInput = document.querySelector("#fill-mask-text-input");
 const fillMaskTopKInput = document.querySelector("#fill-mask-top-k-input");
 const runFillMaskButton = document.querySelector("#run-fill-mask-button");
 
+const nerDemo = document.querySelector("#ner-demo");
+const nerTextInput = document.querySelector("#ner-text-input");
+const runNerButton = document.querySelector("#run-ner-button");
+
 
 const demoMetadata = {
   sentiment: {
@@ -99,6 +103,7 @@ function setActiveDemo(demoName) {
   zeroShotDemo.classList.remove("active");
   textGenerationDemo.classList.remove("active");
   fillMaskDemo.classList.remove("active");
+  nerDemo.classList.remove("active");
   placeholderDemo.classList.remove("active");
 
   if (demoName === "sentiment") {
@@ -109,6 +114,8 @@ function setActiveDemo(demoName) {
     textGenerationDemo.classList.add("active");
   } else if (demoName === "fill-mask") {
     fillMaskDemo.classList.add("active");
+  } else if (demoName === "ner") {
+    nerDemo.classList.add("active");
   } else {
     placeholderDemo.classList.add("active");
     placeholderText.textContent = metadata.placeholder;
@@ -282,6 +289,41 @@ async function runVideo002FillMaskDemo() {
 }
 
 
+async function runVideo002NerDemo() {
+  const text = nerTextInput.value.trim();
+
+  if (text.length === 0) {
+    resultOutput.textContent = "Please enter text for named entity recognition.";
+    return;
+  }
+
+  runNerButton.disabled = true;
+  resultOutput.textContent = "Extracting named entities...";
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/video-002/pipeline-function/ner`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text,
+      }),
+    });
+
+    const data = await response.json();
+
+    resultOutput.textContent = JSON.stringify(data, null, 2);
+  } catch (error) {
+    resultOutput.textContent = `Request failed: ${error}`;
+  } finally {
+    runNerButton.disabled = false;
+  }
+}
+
+
+
+
 runDemoButton.addEventListener("click", runVideo002SentimentDemo);
 
 clearButton.addEventListener("click", () => {
@@ -293,5 +335,9 @@ runZeroShotButton.addEventListener("click", runVideo002ZeroShotDemo);
 runTextGenerationButton.addEventListener("click", runVideo002TextGenerationDemo);
 
 runFillMaskButton.addEventListener("click", runVideo002FillMaskDemo);
+
+runNerButton.addEventListener("click", runVideo002NerDemo);
+
+
 
 setActiveDemo("sentiment");

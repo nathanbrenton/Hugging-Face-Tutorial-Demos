@@ -44,3 +44,12 @@ def test_video_002_fill_mask_route_exists_in_openapi() -> None:
 
     assert response.status_code == 200
     assert "/api/video-002/pipeline-function/fill-mask" in response.json()["paths"]
+
+
+def test_video_002_ner_route_exists_in_openapi() -> None:
+    response = client.get("/openapi.json")
+
+    assert response.status_code == 200
+    assert "/api/video-002/pipeline-function/ner" in response.json()["paths"]
+
+

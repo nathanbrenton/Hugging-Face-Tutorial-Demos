@@ -50,6 +50,18 @@ def get_fill_mask_pipeline() -> Any:
         model=settings.fill_mask_model_id,
     )
 
+@lru_cache(maxsize=1)
+def get_ner_pipeline() -> Any:
+    """
+    Load the Hugging Face named entity recognition pipeline once
+    and reuse it across requests.
+    """
+    return pipeline(
+        task="ner",
+        model=settings.ner_model_id,
+        aggregation_strategy="simple",
+    )
+
 
 def analyze_sentiment(texts: list[str]) -> list[dict[str, Any]]:
     """
@@ -123,4 +135,20 @@ def fill_mask(text: str, top_k: int = 5) -> list[dict[str, Any]]:
         for result in results
     ]
 
+def extract_named_entities(text: str) -> list[dict[str, Any]]:
+    """
+    Extract named entities from text.
+    """
+    ner_pipeline = get_ner_pipeline()
+    results = ner_pipeline(text)
 
+    return [
+        {
+            "entity_group": result["entity_group"],
+            "score": float(result["score"]),
+            "word": result["word"],
+            "start": result["start"],
+            "end": result["end"],
+        }
+        for result in results
+    ]
