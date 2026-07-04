@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from fastapi import APIRouter
 
 from app.core.config import settings
-from app.services.pipeline_service import analyze_sentiment, classify_zero_shot, generate_text
+from app.services.pipeline_service import analyze_sentiment, classify_zero_shot, fill_mask, generate_text
 
 router = APIRouter(
     prefix="/api/video-002/pipeline-function",
@@ -17,12 +17,10 @@ class SentimentRequest(BaseModel):
         description="One or more text inputs to analyze.",
     )
 
-
 class SentimentResult(BaseModel):
     text: str
     label: str
     score: float
-
 
 class SentimentResponse(BaseModel):
     video: str
@@ -42,7 +40,6 @@ class ZeroShotRequest(BaseModel):
         min_length=2,
         description="Two or more labels to compare against the text.",
     )
-
 
 class ZeroShotResponse(BaseModel):
     video: str
@@ -67,10 +64,8 @@ class TextGenerationRequest(BaseModel):
         description="Maximum number of new tokens to generate.",
     )
 
-
 class TextGenerationItem(BaseModel):
     generated_text: str
-
 
 class TextGenerationResponse(BaseModel):
     video: str
@@ -81,6 +76,33 @@ class TextGenerationResponse(BaseModel):
     max_new_tokens: int
     results: list[TextGenerationItem]
 
+class FillMaskRequest(BaseModel):
+    text: str = Field(
+        ...,
+        min_length=1,
+        description="Text containing exactly one mask token.",
+    )
+    top_k: int = Field(
+        5,
+        ge=1,
+        le=10,
+        description="Number of mask predictions to return.",
+    )
+
+class FillMaskItem(BaseModel):
+    sequence: str
+    score: float
+    token: int
+    token_str: str
+
+class FillMaskResponse(BaseModel):
+    video: str
+    concept: str
+    task: str
+    model: str
+    text: str
+    top_k: int
+    results: list[FillMaskItem]
 
 
 @router.post("/sentiment", response_model=SentimentResponse)
@@ -140,3 +162,21 @@ def run_text_generation(payload: TextGenerationRequest) -> TextGenerationRespons
     )
 
 
+@router.post("/fill-mask", response_model=FillMaskResponse)
+def run_fill_mask(payload: FillMaskRequest) -> FillMaskResponse:
+    cleaned_text = payload.text.strip()
+
+    results = fill_mask(
+        text=cleaned_text,
+        top_k=payload.top_k,
+    )
+
+    return FillMaskResponse(
+        video="002",
+        concept="pipeline",
+        task="fill-mask",
+        model=settings.fill_mask_model_id,
+        text=cleaned_text,
+        top_k=payload.top_k,
+        results=results,
+    )

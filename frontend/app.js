@@ -25,6 +25,12 @@ const textGenerationPromptInput = document.querySelector("#text-generation-promp
 const textGenerationMaxTokensInput = document.querySelector("#text-generation-max-tokens-input");
 const runTextGenerationButton = document.querySelector("#run-text-generation-button");
 
+const fillMaskDemo = document.querySelector("#fill-mask-demo");
+const fillMaskTextInput = document.querySelector("#fill-mask-text-input");
+const fillMaskTopKInput = document.querySelector("#fill-mask-top-k-input");
+const runFillMaskButton = document.querySelector("#run-fill-mask-button");
+
+
 const demoMetadata = {
   sentiment: {
     title: "Sentiment Analysis",
@@ -51,6 +57,13 @@ const demoMetadata = {
       "When implemented, the user will submit a prompt. The backend will use the local DistilGPT-2 model to generate a continuation.",
     placeholder:
       "Text generation will be implemented after zero-shot classification. It will use a prompt and return generated text.",
+  },
+  "fill-mask": {
+    title: "Fill-Mask",
+    pipelineCall: 'pipeline("fill-mask")',
+    modelUsed: "distilbert/distilbert-base-uncased",
+    runtime: "Runs locally through the FastAPI backend using the downloaded DistilBERT base model.",
+    placeholder: "",
   },
   ner: {
     title: "Named Entity Recognition",
@@ -85,6 +98,7 @@ function setActiveDemo(demoName) {
   sentimentDemo.classList.remove("active");
   zeroShotDemo.classList.remove("active");
   textGenerationDemo.classList.remove("active");
+  fillMaskDemo.classList.remove("active");
   placeholderDemo.classList.remove("active");
 
   if (demoName === "sentiment") {
@@ -93,6 +107,8 @@ function setActiveDemo(demoName) {
     zeroShotDemo.classList.add("active");
   } else if (demoName === "text-generation") {
     textGenerationDemo.classList.add("active");
+  } else if (demoName === "fill-mask") {
+    fillMaskDemo.classList.add("active");
   } else {
     placeholderDemo.classList.add("active");
     placeholderText.textContent = metadata.placeholder;
@@ -221,6 +237,50 @@ async function runVideo002TextGenerationDemo() {
   }
 }
 
+async function runVideo002FillMaskDemo() {
+  const text = fillMaskTextInput.value.trim();
+  const topK = Number(fillMaskTopKInput.value);
+
+  if (text.length === 0) {
+    resultOutput.textContent = "Please enter text containing a mask token.";
+    return;
+  }
+
+  if (!text.includes("[MASK]")) {
+    resultOutput.textContent = "Please include the [MASK] token in the text.";
+    return;
+  }
+
+  if (!Number.isInteger(topK) || topK < 1 || topK > 10) {
+    resultOutput.textContent = "Top predictions must be a whole number between 1 and 10.";
+    return;
+  }
+
+  runFillMaskButton.disabled = true;
+  resultOutput.textContent = "Filling mask...";
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/video-002/pipeline-function/fill-mask`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text,
+        top_k: topK,
+      }),
+    });
+
+    const data = await response.json();
+
+    resultOutput.textContent = JSON.stringify(data, null, 2);
+  } catch (error) {
+    resultOutput.textContent = `Request failed: ${error}`;
+  } finally {
+    runFillMaskButton.disabled = false;
+  }
+}
+
 
 runDemoButton.addEventListener("click", runVideo002SentimentDemo);
 
@@ -231,5 +291,7 @@ clearButton.addEventListener("click", () => {
 runZeroShotButton.addEventListener("click", runVideo002ZeroShotDemo);
 
 runTextGenerationButton.addEventListener("click", runVideo002TextGenerationDemo);
+
+runFillMaskButton.addEventListener("click", runVideo002FillMaskDemo);
 
 setActiveDemo("sentiment");

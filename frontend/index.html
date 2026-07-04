@@ -38,6 +38,7 @@
         <button class="demo-tab active" data-demo="sentiment">Sentiment Analysis</button>
         <button class="demo-tab" data-demo="zero-shot">Zero-Shot Classification</button>
         <button class="demo-tab" data-demo="text-generation">Text Generation</button>
+        <button class="demo-tab" data-demo="fill-mask">Fill-Mask</button>
         <button class="demo-tab" data-demo="ner">Named Entity Recognition</button>
       </div>
 
@@ -103,6 +104,18 @@ The model loaded successfully, but the results are just okay.</textarea>
         <p id="placeholder-text">
           Select a demo to see its input form.
         </p>
+      </div>
+
+      <div id="fill-mask-demo" class="demo-panel">
+        <label for="fill-mask-text-input">Text with mask token</label>
+        <textarea id="fill-mask-text-input" rows="5">This course will teach you all about [MASK] models.</textarea>
+
+        <label for="fill-mask-top-k-input">Top predictions</label>
+        <input id="fill-mask-top-k-input" type="number" min="1" max="10" value="5">
+
+        <div class="actions">
+          <button id="run-fill-mask-button">Fill Mask</button>
+        </div>
       </div>
 
     </section>

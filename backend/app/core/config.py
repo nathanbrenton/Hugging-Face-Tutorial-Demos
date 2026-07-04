@@ -28,6 +28,10 @@ class Settings:
         "TEXT_GENERATION_MODEL_ID",
         "/home/mlops/Downloads/huggingface-models/repos/distilbert/distilgpt2",
     )
+    fill_mask_model_id: str = os.getenv(
+        "FILL_MASK_MODEL_ID",
+        "/home/mlops/Downloads/huggingface-models/repos/distilbert/distilbert-base-uncased",
+    )
     ner_model_id: str = os.getenv(
         "NER_MODEL_ID",
         "/home/mlops/Downloads/huggingface-models/repos/dslim/bert-base-NER",

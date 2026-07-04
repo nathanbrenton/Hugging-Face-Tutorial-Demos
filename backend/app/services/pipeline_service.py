@@ -39,6 +39,17 @@ def get_text_generation_pipeline() -> Any:
         model=settings.text_generation_model_id,
     )
 
+@lru_cache(maxsize=1)
+def get_fill_mask_pipeline() -> Any:
+    """
+    Load the Hugging Face fill-mask pipeline once
+    and reuse it across requests.
+    """
+    return pipeline(
+        task="fill-mask",
+        model=settings.fill_mask_model_id,
+    )
+
 
 def analyze_sentiment(texts: list[str]) -> list[dict[str, Any]]:
     """
@@ -94,3 +105,22 @@ def generate_text(prompt: str, max_new_tokens: int = 50) -> list[dict[str, str]]
         }
         for result in results
     ]
+
+def fill_mask(text: str, top_k: int = 5) -> list[dict[str, Any]]:
+    """
+    Predict likely replacements for the mask token in a sentence.
+    """
+    mask_pipeline = get_fill_mask_pipeline()
+    results = mask_pipeline(text, top_k=top_k)
+
+    return [
+        {
+            "sequence": result["sequence"],
+            "score": float(result["score"]),
+            "token": int(result["token"]),
+            "token_str": result["token_str"],
+        }
+        for result in results
+    ]
+
+
