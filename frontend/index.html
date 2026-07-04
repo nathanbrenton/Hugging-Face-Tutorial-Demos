@@ -87,6 +87,18 @@ The model loaded successfully, but the results are just okay.</textarea>
         </div>
       </div>
 
+      <div id="text-generation-demo" class="demo-panel">
+        <label for="text-generation-prompt-input">Prompt</label>
+        <textarea id="text-generation-prompt-input" rows="5">In this Hugging Face course, we will learn</textarea>
+  
+        <label for="text-generation-max-tokens-input">Max new tokens</label>
+        <input id="text-generation-max-tokens-input" type="number" min="1" max="100" value="30">
+
+        <div class="actions">
+          <button id="run-text-generation-button">Generate Text</button>
+        </div>
+      </div>
+
       <div id="placeholder-demo" class="demo-panel">
         <p id="placeholder-text">
           Select a demo to see its input form.

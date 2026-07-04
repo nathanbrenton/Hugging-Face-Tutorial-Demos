@@ -31,3 +31,11 @@ def test_video_002_zero_shot_route_exists_in_openapi() -> None:
 
     assert response.status_code == 200
     assert "/api/video-002/pipeline-function/zero-shot-classification" in response.json()["paths"]
+
+def test_video_002_text_generation_route_exists_in_openapi() -> None:
+    response = client.get("/openapi.json")
+
+    assert response.status_code == 200
+    assert "/api/video-002/pipeline-function/text-generation" in response.json()["paths"]
+
+

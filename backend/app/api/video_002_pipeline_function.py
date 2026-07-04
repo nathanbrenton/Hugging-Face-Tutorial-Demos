@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from fastapi import APIRouter
 
 from app.core.config import settings
-from app.services.pipeline_service import analyze_sentiment, classify_zero_shot
+from app.services.pipeline_service import analyze_sentiment, classify_zero_shot, generate_text
 
 router = APIRouter(
     prefix="/api/video-002/pipeline-function",
@@ -54,6 +54,35 @@ class ZeroShotResponse(BaseModel):
     labels: list[str]
     scores: list[float]
 
+class TextGenerationRequest(BaseModel):
+    prompt: str = Field(
+        ...,
+        min_length=1,
+        description="Prompt used to start text generation.",
+    )
+    max_new_tokens: int = Field(
+        50,
+        ge=1,
+        le=100,
+        description="Maximum number of new tokens to generate.",
+    )
+
+
+class TextGenerationItem(BaseModel):
+    generated_text: str
+
+
+class TextGenerationResponse(BaseModel):
+    video: str
+    concept: str
+    task: str
+    model: str
+    prompt: str
+    max_new_tokens: int
+    results: list[TextGenerationItem]
+
+
+
 @router.post("/sentiment", response_model=SentimentResponse)
 def run_sentiment_analysis(payload: SentimentRequest) -> SentimentResponse:
     cleaned_texts = [text.strip() for text in payload.texts if text.strip()]
@@ -88,6 +117,26 @@ def run_zero_shot_classification(payload: ZeroShotRequest) -> ZeroShotResponse:
         candidate_labels=cleaned_labels,
         labels=result["labels"],
         scores=result["scores"],
+    )
+
+
+@router.post("/text-generation", response_model=TextGenerationResponse)
+def run_text_generation(payload: TextGenerationRequest) -> TextGenerationResponse:
+    cleaned_prompt = payload.prompt.strip()
+
+    results = generate_text(
+        prompt=cleaned_prompt,
+        max_new_tokens=payload.max_new_tokens,
+    )
+
+    return TextGenerationResponse(
+        video="002",
+        concept="pipeline",
+        task="text-generation",
+        model=settings.text_generation_model_id,
+        prompt=cleaned_prompt,
+        max_new_tokens=payload.max_new_tokens,
+        results=results,
     )
 
 

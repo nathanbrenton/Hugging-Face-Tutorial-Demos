@@ -28,6 +28,17 @@ def get_zero_shot_pipeline() -> Any:
         model=settings.zero_shot_model_id,
     )
 
+@lru_cache(maxsize=1)
+def get_text_generation_pipeline() -> Any:
+    """
+    Load the Hugging Face text-generation pipeline once
+    and reuse it across requests.
+    """
+    return pipeline(
+        task="text-generation",
+        model=settings.text_generation_model_id,
+    )
+
 
 def analyze_sentiment(texts: list[str]) -> list[dict[str, Any]]:
     """
@@ -63,3 +74,23 @@ def classify_zero_shot(text: str, candidate_labels: list[str]) -> dict[str, Any]
         "labels": result["labels"],
         "scores": [float(score) for score in result["scores"]],
     }
+
+def generate_text(prompt: str, max_new_tokens: int = 50) -> list[dict[str, str]]:
+    """
+    Generate text from a prompt.
+    """
+    generator = get_text_generation_pipeline()
+    results = generator(
+        prompt,
+        max_new_tokens=max_new_tokens,
+        do_sample=True,
+        temperature=0.8,
+        pad_token_id=generator.tokenizer.eos_token_id,
+    )
+
+    return [
+        {
+            "generated_text": result["generated_text"],
+        }
+        for result in results
+    ]

@@ -20,6 +20,11 @@ const zeroShotTextInput = document.querySelector("#zero-shot-text-input");
 const zeroShotLabelsInput = document.querySelector("#zero-shot-labels-input");
 const runZeroShotButton = document.querySelector("#run-zero-shot-button");
 
+const textGenerationDemo = document.querySelector("#text-generation-demo");
+const textGenerationPromptInput = document.querySelector("#text-generation-prompt-input");
+const textGenerationMaxTokensInput = document.querySelector("#text-generation-max-tokens-input");
+const runTextGenerationButton = document.querySelector("#run-text-generation-button");
+
 const demoMetadata = {
   sentiment: {
     title: "Sentiment Analysis",
@@ -79,12 +84,15 @@ function setActiveDemo(demoName) {
 
   sentimentDemo.classList.remove("active");
   zeroShotDemo.classList.remove("active");
+  textGenerationDemo.classList.remove("active");
   placeholderDemo.classList.remove("active");
 
   if (demoName === "sentiment") {
     sentimentDemo.classList.add("active");
   } else if (demoName === "zero-shot") {
     zeroShotDemo.classList.add("active");
+  } else if (demoName === "text-generation") {
+    textGenerationDemo.classList.add("active");
   } else {
     placeholderDemo.classList.add("active");
     placeholderText.textContent = metadata.placeholder;
@@ -174,6 +182,46 @@ async function runVideo002ZeroShotDemo() {
   }
 }
 
+async function runVideo002TextGenerationDemo() {
+  const prompt = textGenerationPromptInput.value.trim();
+  const maxNewTokens = Number(textGenerationMaxTokensInput.value);
+
+  if (prompt.length === 0) {
+    resultOutput.textContent = "Please enter a prompt.";
+    return;
+  }
+
+  if (!Number.isInteger(maxNewTokens) || maxNewTokens < 1 || maxNewTokens > 100) {
+    resultOutput.textContent = "Max new tokens must be a whole number between 1 and 100.";
+    return;
+  }
+
+  runTextGenerationButton.disabled = true;
+  resultOutput.textContent = "Generating text...";
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/video-002/pipeline-function/text-generation`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        prompt,
+        max_new_tokens: maxNewTokens,
+      }),
+    });
+
+    const data = await response.json();
+
+    resultOutput.textContent = JSON.stringify(data, null, 2);
+  } catch (error) {
+    resultOutput.textContent = `Request failed: ${error}`;
+  } finally {
+    runTextGenerationButton.disabled = false;
+  }
+}
+
+
 runDemoButton.addEventListener("click", runVideo002SentimentDemo);
 
 clearButton.addEventListener("click", () => {
@@ -181,5 +229,7 @@ clearButton.addEventListener("click", () => {
 });
 
 runZeroShotButton.addEventListener("click", runVideo002ZeroShotDemo);
+
+runTextGenerationButton.addEventListener("click", runVideo002TextGenerationDemo);
 
 setActiveDemo("sentiment");
