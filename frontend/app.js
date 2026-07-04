@@ -1,5 +1,7 @@
 const API_BASE_URL = "http://127.0.0.1:8000";
 
+const implementationNote = document.querySelector("#implementation-note");
+
 const demoTabs = document.querySelectorAll(".demo-tab");
 const sentimentDemo = document.querySelector("#sentiment-demo");
 const placeholderDemo = document.querySelector("#placeholder-demo");
@@ -39,6 +41,17 @@ const questionAnsweringQuestionInput = document.querySelector("#question-answeri
 const questionAnsweringContextInput = document.querySelector("#question-answering-context-input");
 const runQuestionAnsweringButton = document.querySelector("#run-question-answering-button");
 
+const summarizationDemo = document.querySelector("#summarization-demo");
+const summarizationTextInput = document.querySelector("#summarization-text-input");
+const summarizationMaxLengthInput = document.querySelector("#summarization-max-length-input");
+const summarizationMinLengthInput = document.querySelector("#summarization-min-length-input");
+const runSummarizationButton = document.querySelector("#run-summarization-button");
+
+const translationDemo = document.querySelector("#translation-demo");
+const translationTextInput = document.querySelector("#translation-text-input");
+const translationMaxLengthInput = document.querySelector("#translation-max-length-input");
+const runTranslationButton = document.querySelector("#run-translation-button");
+
 
 
 const demoMetadata = {
@@ -48,6 +61,7 @@ const demoMetadata = {
     modelUsed: "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
     runtime:
       "When the user clicks Analyze Text, the browser sends text to the local FastAPI backend. The backend runs the local sentiment model and returns labels and confidence scores.",
+    implementationNote: "This local demo uses the standard Hugging Face pipeline abstraction, matching the course concept.",
     placeholder: "",
   },
   "zero-shot": {
@@ -56,6 +70,7 @@ const demoMetadata = {
     modelUsed: "facebook/bart-large-mnli",
     runtime:
       "When implemented, the user will submit text and candidate labels. The backend will use the local zero-shot model to rank which labels best match the text.",
+    implementationNote: "This local demo uses the standard Hugging Face pipeline abstraction, matching the course concept.",
     placeholder:
       "Zero-shot classification is the next demo to implement. It will use text plus candidate labels such as education, politics, sports, or finance.",
   },
@@ -65,6 +80,7 @@ const demoMetadata = {
     modelUsed: "distilbert/distilgpt2",
     runtime:
       "When implemented, the user will submit a prompt. The backend will use the local DistilGPT-2 model to generate a continuation.",
+    implementationNote: "This local demo uses the standard Hugging Face pipeline abstraction, matching the course concept.",
     placeholder:
       "Text generation will be implemented after zero-shot classification. It will use a prompt and return generated text.",
   },
@@ -73,6 +89,7 @@ const demoMetadata = {
     pipelineCall: 'pipeline("fill-mask")',
     modelUsed: "distilbert/distilbert-base-uncased",
     runtime: "Runs locally through the FastAPI backend using the downloaded DistilBERT base model.",
+    implementationNote: "This local demo uses the standard Hugging Face pipeline abstraction, matching the course concept.",
     placeholder: "",
   },
   "ner": {
@@ -81,6 +98,7 @@ const demoMetadata = {
     modelUsed: "dslim/bert-base-NER",
     runtime:
       "When implemented, the user will submit text. The backend will identify entities such as people, organizations, and locations.",
+    implementationNote: "This local demo uses the standard Hugging Face pipeline abstraction, matching the course concept.",
     placeholder:
       "Named entity recognition will be implemented after text generation. The backend will group detected entity tokens into readable spans.",
   },
@@ -89,6 +107,23 @@ const demoMetadata = {
     pipelineCall: 'pipeline("question-answering")',
     modelUsed: "deepset/roberta-base-squad2",
     runtime: "Runs locally through the FastAPI backend using the downloaded RoBERTa SQuAD2 model. The backend uses the tokenizer and model directly because this installed Transformers version does not register pipeline(\"question-answering\").",
+    implementationNote: 'The course introduces this as pipeline("question-answering"). In this local environment, that task name is not registered in the installed Transformers pipeline registry, so the backend uses AutoTokenizer + AutoModelForQuestionAnswering directly.',
+    placeholder: "",
+  },
+  summarization: {
+    title: "Summarization",
+    pipelineCall: 'pipeline("summarization")',
+    modelUsed: "sshleifer/distilbart-cnn-12-6",
+    runtime: 'Runs locally through the FastAPI backend using the downloaded DistilBART CNN summarization model. The backend uses the tokenizer and model directly because this installed Transformers version does not register pipeline("summarization").',
+    implementationNote: 'The course introduces this as pipeline("summarization"). In this local environment, that task name is not registered in the installed Transformers pipeline registry, so the backend uses AutoTokenizer + AutoModelForSeq2SeqLM directly.',
+    placeholder: "",
+  },
+  translation: {
+    title: "Translation",
+    pipelineCall: 'pipeline("translation", model="Helsinki-NLP/opus-mt-fr-en")',
+    modelUsed: "Helsinki-NLP/opus-mt-fr-en",
+    runtime: 'Runs locally through the FastAPI backend using the downloaded Helsinki-NLP Marian French-to-English model. The backend uses MarianTokenizer and MarianMTModel directly because this installed Transformers version does not register pipeline("translation").',
+    implementationNote: 'The course introduces this as pipeline("translation", model="Helsinki-NLP/opus-mt-fr-en"). In this local environment, that task name is not registered in the installed Transformers pipeline registry, so the backend uses MarianTokenizer + MarianMTModel directly.',
     placeholder: "",
   },
 };
@@ -111,6 +146,7 @@ function setActiveDemo(demoName) {
   pipelineCall.textContent = metadata.pipelineCall;
   modelUsed.textContent = metadata.modelUsed;
   modelRuntime.textContent = metadata.runtime;
+  implementationNote.textContent = metadata.implementationNote;
 
   sentimentDemo.classList.remove("active");
   zeroShotDemo.classList.remove("active");
@@ -118,6 +154,8 @@ function setActiveDemo(demoName) {
   fillMaskDemo.classList.remove("active");
   nerDemo.classList.remove("active");
   questionAnsweringDemo.classList.remove("active");
+  summarizationDemo.classList.remove("active");
+  translationDemo.classList.remove("active");
   placeholderDemo.classList.remove("active");
 
   if (demoName === "sentiment") {
@@ -132,6 +170,10 @@ function setActiveDemo(demoName) {
     nerDemo.classList.add("active");
   } else if (demoName === "question-answering") {
     questionAnsweringDemo.classList.add("active");
+  } else if (demoName === "summarization") {
+    summarizationDemo.classList.add("active");
+  } else if (demoName === "translation") {
+    translationDemo.classList.add("active");
   } else {
     placeholderDemo.classList.add("active");
     placeholderText.textContent = metadata.placeholder;
@@ -381,6 +423,99 @@ async function runVideo002QuestionAnsweringDemo() {
 
 
 
+async function runVideo002SummarizationDemo() {
+  const text = summarizationTextInput.value.trim();
+  const maxLength = Number(summarizationMaxLengthInput.value);
+  const minLength = Number(summarizationMinLengthInput.value);
+
+  if (text.length === 0) {
+    resultOutput.textContent = "Please enter text to summarize.";
+    return;
+  }
+
+  if (!Number.isInteger(maxLength) || maxLength < 20 || maxLength > 150) {
+    resultOutput.textContent = "Max summary length must be a whole number between 20 and 150.";
+    return;
+  }
+
+  if (!Number.isInteger(minLength) || minLength < 5 || minLength > 100) {
+    resultOutput.textContent = "Min summary length must be a whole number between 5 and 100.";
+    return;
+  }
+
+  if (minLength > maxLength) {
+    resultOutput.textContent = "Min summary length cannot be greater than max summary length.";
+    return;
+  }
+
+  runSummarizationButton.disabled = true;
+  resultOutput.textContent = "Summarizing text...";
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/video-002/pipeline-function/summarization`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text,
+        max_length: maxLength,
+        min_length: minLength,
+      }),
+    });
+
+    const data = await response.json();
+
+    resultOutput.textContent = JSON.stringify(data, null, 2);
+  } catch (error) {
+    resultOutput.textContent = `Request failed: ${error}`;
+  } finally {
+    runSummarizationButton.disabled = false;
+  }
+}
+
+
+
+async function runVideo002TranslationDemo() {
+  const text = translationTextInput.value.trim();
+  const maxLength = Number(translationMaxLengthInput.value);
+
+  if (text.length === 0) {
+    resultOutput.textContent = "Please enter French text to translate.";
+    return;
+  }
+
+  if (!Number.isInteger(maxLength) || maxLength < 10 || maxLength > 200) {
+    resultOutput.textContent = "Max translation length must be a whole number between 10 and 200.";
+    return;
+  }
+
+  runTranslationButton.disabled = true;
+  resultOutput.textContent = "Translating text...";
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/video-002/pipeline-function/translation`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text,
+        max_length: maxLength,
+      }),
+    });
+
+    const data = await response.json();
+
+    resultOutput.textContent = JSON.stringify(data, null, 2);
+  } catch (error) {
+    resultOutput.textContent = `Request failed: ${error}`;
+  } finally {
+    runTranslationButton.disabled = false;
+  }
+}
+
+
 
 
 runDemoButton.addEventListener("click", runVideo002SentimentDemo);
@@ -398,6 +533,13 @@ runFillMaskButton.addEventListener("click", runVideo002FillMaskDemo);
 runNerButton.addEventListener("click", runVideo002NerDemo);
 
 runQuestionAnsweringButton.addEventListener("click", runVideo002QuestionAnsweringDemo);
+
+runSummarizationButton.addEventListener("click", runVideo002SummarizationDemo);
+
+runTranslationButton.addEventListener("click", runVideo002TranslationDemo);
+
+
+
 
 
 setActiveDemo("sentiment");

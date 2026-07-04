@@ -41,6 +41,8 @@
         <button class="demo-tab" data-demo="fill-mask">Fill-Mask</button>
         <button class="demo-tab" data-demo="ner">Named Entity Recognition</button>
         <button class="demo-tab" data-demo="question-answering">Question Answering</button>
+        <button class="demo-tab" data-demo="summarization">Summarization</button>
+        <button class="demo-tab" data-demo="translation">Translation</button>
       </div>
 
       <div class="model-details">
@@ -57,6 +59,10 @@
           <dd id="model-runtime">
             When the user clicks Analyze Text, the browser sends text to the local FastAPI backend.
             The backend runs the local Hugging Face model and returns structured JSON results.
+          </dd>
+          <dt>Implementation note</dt>
+          <dd id="implementation-note">
+            This demo uses the standard Hugging Face pipeline abstraction.
           </dd>
         </dl>
       </div>
@@ -139,6 +145,32 @@ The model loaded successfully, but the results are just okay.</textarea>
       
         <div class="actions">
           <button id="run-question-answering-button">Answer Question</button>
+        </div>
+      </div>
+      <div id="summarization-demo" class="demo-panel">
+        <label for="summarization-text-input">Text to summarize</label>
+        <textarea id="summarization-text-input" rows="8">Hugging Face Transformers provides a high-level pipeline function that makes it easier to use pretrained models for common machine learning tasks. Instead of manually loading tokenizers, preparing inputs, running model inference, and decoding outputs, users can call a pipeline with a task name such as sentiment-analysis, text-generation, or summarization. This makes the library approachable for beginners while still allowing advanced users to customize the underlying models and tokenizers when needed.</textarea>
+
+        <label for="summarization-max-length-input">Max summary length</label>
+        <input id="summarization-max-length-input" type="number" min="20" max="150" value="60">
+      
+        <label for="summarization-min-length-input">Min summary length</label>
+        <input id="summarization-min-length-input" type="number" min="5" max="100" value="20">
+
+        <div class="actions">
+          <button id="run-summarization-button">Summarize Text</button>
+        </div>
+      </div>
+
+      <div id="translation-demo" class="demo-panel">
+        <label for="translation-text-input">French text to translate</label>
+        <textarea id="translation-text-input" rows="5">Bonjour, je suis heureux d'apprendre Hugging Face.</textarea>
+
+        <label for="translation-max-length-input">Max translation length</label>
+        <input id="translation-max-length-input" type="number" min="10" max="200" value="80">
+
+        <div class="actions">
+          <button id="run-translation-button">Translate Text</button>
         </div>
       </div>
 

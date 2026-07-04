@@ -9,7 +9,12 @@ from app.services.pipeline_service import (
     extract_named_entities,
     fill_mask,
     generate_text,
+    summarize_text,
+    translate_text,
 )
+
+
+
 
 
 router = APIRouter(
@@ -187,6 +192,74 @@ class QuestionAnsweringResponse(BaseModel):
 
 
 
+class SummarizationRequest(BaseModel):
+    text: str = Field(
+        ...,
+        min_length=1,
+        description="Text passage to summarize.",
+    )
+    max_length: int = Field(
+        80,
+        ge=20,
+        le=150,
+        description="Maximum summary length in tokens.",
+    )
+    min_length: int = Field(
+        20,
+        ge=5,
+        le=100,
+        description="Minimum summary length in tokens.",
+    )
+
+
+class SummarizationItem(BaseModel):
+    summary_text: str
+
+
+class SummarizationResponse(BaseModel):
+    video: str
+    concept: str
+    task: str
+    model: str
+    text: str
+    max_length: int
+    min_length: int
+    results: list[SummarizationItem]
+
+
+
+class TranslationRequest(BaseModel):
+    text: str = Field(
+        ...,
+        min_length=1,
+        description="French text to translate into English.",
+    )
+    max_length: int = Field(
+        80,
+        ge=10,
+        le=200,
+        description="Maximum translation length in tokens.",
+    )
+
+
+class TranslationResult(BaseModel):
+    translation_text: str
+
+
+class TranslationResponse(BaseModel):
+    video: str
+    concept: str
+    task: str
+    model: str
+    source_language: str
+    target_language: str
+    text: str
+    max_length: int
+    result: TranslationResult
+
+
+
+
 
 
 
@@ -302,6 +375,52 @@ def run_question_answering(payload: QuestionAnsweringRequest) -> QuestionAnsweri
         context=cleaned_context,
         result=result,
     )
+
+
+@router.post("/summarization", response_model=SummarizationResponse)
+def run_summarization(payload: SummarizationRequest) -> SummarizationResponse:
+    cleaned_text = payload.text.strip()
+
+    results = summarize_text(
+        text=cleaned_text,
+        max_length=payload.max_length,
+        min_length=payload.min_length,
+    )
+
+    return SummarizationResponse(
+        video="002",
+        concept="pipeline",
+        task="summarization",
+        model=settings.summarization_model_id,
+        text=cleaned_text,
+        max_length=payload.max_length,
+        min_length=payload.min_length,
+        results=results,
+    )
+
+
+
+@router.post("/translation", response_model=TranslationResponse)
+def run_translation(payload: TranslationRequest) -> TranslationResponse:
+    cleaned_text = payload.text.strip()
+
+    result = translate_text(
+        text=cleaned_text,
+        max_length=payload.max_length,
+    )
+
+    return TranslationResponse(
+        video="002",
+        concept="pipeline",
+        task="translation",
+        model=settings.translation_model_id,
+        source_language="fr",
+        target_language="en",
+        text=cleaned_text,
+        max_length=payload.max_length,
+        result=result,
+    )
+
 
 
 

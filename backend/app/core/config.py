@@ -40,6 +40,17 @@ class Settings:
         "QUESTION_ANSWERING_MODEL_ID",
         "/home/mlops/Downloads/huggingface-models/repos/deepset/roberta-base-squad2",
     )
+    summarization_model_id: str = os.getenv(
+        "SUMMARIZATION_MODEL_ID",
+        "/home/mlops/Downloads/huggingface-models/repos/sshleifer/distilbart-cnn-12-6",
+    )
+    translation_model_id: str = os.getenv(
+        "TRANSLATION_MODEL_ID",
+        "/home/mlops/Downloads/huggingface-models/repos/Helsinki-NLP/opus-mt-fr-en",
+    )
+
+
+
 
 
 settings = Settings()

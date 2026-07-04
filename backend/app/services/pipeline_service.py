@@ -2,7 +2,14 @@ from functools import lru_cache
 from typing import Any
 
 import torch
-from transformers import AutoModelForQuestionAnswering, AutoTokenizer, pipeline
+from transformers import (
+    AutoModelForQuestionAnswering,
+    AutoModelForSeq2SeqLM,
+    AutoTokenizer,
+    MarianMTModel,
+    MarianTokenizer,
+    pipeline,
+)
 
 from app.core.config import settings
 
@@ -74,6 +81,37 @@ def get_question_answering_components() -> tuple[Any, Any]:
     model.eval()
 
     return tokenizer, model
+
+
+
+@lru_cache(maxsize=1)
+def get_summarization_components() -> tuple[Any, Any]:
+    """
+    Load the summarization tokenizer and model once
+    and reuse them across requests.
+    """
+    tokenizer = AutoTokenizer.from_pretrained(settings.summarization_model_id)
+    model = AutoModelForSeq2SeqLM.from_pretrained(settings.summarization_model_id)
+    model.eval()
+
+    return tokenizer, model
+
+
+
+@lru_cache(maxsize=1)
+def get_translation_components() -> tuple[Any, Any]:
+    """
+    Load the French-to-English translation tokenizer and model once
+    and reuse them across requests.
+    """
+    tokenizer = MarianTokenizer.from_pretrained(settings.translation_model_id)
+    model = MarianMTModel.from_pretrained(settings.translation_model_id)
+    model.eval()
+
+    return tokenizer, model
+
+
+
 
 
 
@@ -245,6 +283,86 @@ def answer_question(question: str, context: str) -> dict[str, Any]:
         "score": answer_score,
         "start": start_char,
         "end": end_char,
+    }
+
+
+
+
+def summarize_text(
+    text: str,
+    max_length: int = 80,
+    min_length: int = 20,
+) -> list[dict[str, str]]:
+    """
+    Summarize a longer text passage.
+
+    This uses the model/tokenizer directly because this installed
+    Transformers version does not register pipeline("summarization").
+    """
+    tokenizer, model = get_summarization_components()
+
+    encoded = tokenizer(
+        text,
+        return_tensors="pt",
+        truncation=True,
+        max_length=1024,
+    )
+
+    with torch.no_grad():
+        summary_ids = model.generate(
+            encoded["input_ids"],
+            attention_mask=encoded.get("attention_mask"),
+            max_length=max_length,
+            min_length=min_length,
+            num_beams=4,
+            do_sample=False,
+            early_stopping=True,
+        )
+
+    summary_text = tokenizer.decode(
+        summary_ids[0],
+        skip_special_tokens=True,
+    )
+
+    return [
+        {
+            "summary_text": summary_text,
+        }
+    ]
+
+
+
+def translate_text(text: str, max_length: int = 80) -> dict[str, str]:
+    """
+    Translate French text into English.
+
+    This uses MarianTokenizer and MarianMTModel directly because the course
+    example uses pipeline("translation"), but this local Transformers build
+    does not register that pipeline task.
+    """
+    tokenizer, model = get_translation_components()
+
+    encoded = tokenizer(
+        text,
+        return_tensors="pt",
+        truncation=True,
+    )
+
+    with torch.no_grad():
+        output_ids = model.generate(
+            **encoded,
+            max_length=max_length,
+            num_beams=4,
+            do_sample=False,
+        )
+
+    translated_text = tokenizer.decode(
+        output_ids[0],
+        skip_special_tokens=True,
+    )
+
+    return {
+        "translation_text": translated_text,
     }
 
 
