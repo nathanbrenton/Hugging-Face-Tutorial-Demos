@@ -1,7 +1,8 @@
 from functools import lru_cache
 from typing import Any
 
-from transformers import pipeline
+import torch
+from transformers import AutoModelForQuestionAnswering, AutoTokenizer, pipeline
 
 from app.core.config import settings
 
@@ -61,6 +62,20 @@ def get_ner_pipeline() -> Any:
         model=settings.ner_model_id,
         aggregation_strategy="simple",
     )
+
+@lru_cache(maxsize=1)
+def get_question_answering_components() -> tuple[Any, Any]:
+    """
+    Load the question-answering tokenizer and model once
+    and reuse them across requests.
+    """
+    tokenizer = AutoTokenizer.from_pretrained(settings.question_answering_model_id)
+    model = AutoModelForQuestionAnswering.from_pretrained(settings.question_answering_model_id)
+    model.eval()
+
+    return tokenizer, model
+
+
 
 
 def analyze_sentiment(texts: list[str]) -> list[dict[str, Any]]:
@@ -152,3 +167,86 @@ def extract_named_entities(text: str) -> list[dict[str, Any]]:
         }
         for result in results
     ]
+
+
+def answer_question(question: str, context: str) -> dict[str, Any]:
+    """
+    Answer a question using the supplied context.
+
+    This uses the model/tokenizer directly because this installed
+    Transformers version does not register pipeline("question-answering").
+    """
+    tokenizer, model = get_question_answering_components()
+
+    encoded = tokenizer(
+        question,
+        context,
+        return_tensors="pt",
+        truncation=True,
+        return_offsets_mapping=True,
+    )
+
+    sequence_ids = encoded.sequence_ids(0)
+    offset_mapping = encoded.pop("offset_mapping")[0].tolist()
+
+    with torch.no_grad():
+        outputs = model(**encoded)
+
+    start_logits = outputs.start_logits[0].clone()
+    end_logits = outputs.end_logits[0].clone()
+
+    context_token_indexes = [
+        index
+        for index, sequence_id in enumerate(sequence_ids)
+        if sequence_id == 1
+    ]
+
+    for index, sequence_id in enumerate(sequence_ids):
+        if sequence_id != 1:
+            start_logits[index] = -float("inf")
+            end_logits[index] = -float("inf")
+
+    best_start = context_token_indexes[0]
+    best_end = context_token_indexes[0]
+    best_score = -float("inf")
+    max_answer_tokens = 30
+
+    for start_index in context_token_indexes:
+        for end_index in context_token_indexes:
+            if end_index < start_index:
+                continue
+
+            if end_index - start_index + 1 > max_answer_tokens:
+                continue
+
+            score = float(start_logits[start_index] + end_logits[end_index])
+
+            if score > best_score:
+                best_score = score
+                best_start = start_index
+                best_end = end_index
+
+    start_probabilities = torch.softmax(start_logits, dim=0)
+    end_probabilities = torch.softmax(end_logits, dim=0)
+    answer_score = float(start_probabilities[best_start] * end_probabilities[best_end])
+
+    start_char = int(offset_mapping[best_start][0])
+    end_char = int(offset_mapping[best_end][1])
+    answer = context[start_char:end_char].strip()
+
+    if not answer:
+        answer = tokenizer.decode(
+            encoded["input_ids"][0][best_start : best_end + 1],
+            skip_special_tokens=True,
+        ).strip()
+
+    return {
+        "answer": answer,
+        "score": answer_score,
+        "start": start_char,
+        "end": end_char,
+    }
+
+
+
+

@@ -4,6 +4,7 @@ from fastapi import APIRouter
 from app.core.config import settings
 from app.services.pipeline_service import (
     analyze_sentiment,
+    answer_question,
     classify_zero_shot,
     extract_named_entities,
     fill_mask,
@@ -15,6 +16,9 @@ router = APIRouter(
     prefix="/api/video-002/pipeline-function",
     tags=["Video 002 - The Pipeline function"],
 )
+
+
+
 
 
 class SentimentRequest(BaseModel):
@@ -35,6 +39,9 @@ class SentimentResponse(BaseModel):
     task: str
     input_count: int
     results: list[SentimentResult]
+
+
+
 
 class ZeroShotRequest(BaseModel):
     text: str = Field(
@@ -57,6 +64,9 @@ class ZeroShotResponse(BaseModel):
     candidate_labels: list[str]
     labels: list[str]
     scores: list[float]
+
+
+
 
 class TextGenerationRequest(BaseModel):
     prompt: str = Field(
@@ -82,6 +92,10 @@ class TextGenerationResponse(BaseModel):
     prompt: str
     max_new_tokens: int
     results: list[TextGenerationItem]
+
+
+
+
 
 class FillMaskRequest(BaseModel):
     text: str = Field(
@@ -112,13 +126,15 @@ class FillMaskResponse(BaseModel):
     results: list[FillMaskItem]
 
 
+
+
+
 class NerRequest(BaseModel):
     text: str = Field(
         ...,
         min_length=1,
         description="Text from which named entities should be extracted.",
     )
-
 
 class NerItem(BaseModel):
     entity_group: str
@@ -127,7 +143,6 @@ class NerItem(BaseModel):
     start: int
     end: int
 
-
 class NerResponse(BaseModel):
     video: str
     concept: str
@@ -135,6 +150,42 @@ class NerResponse(BaseModel):
     model: str
     text: str
     results: list[NerItem]
+
+
+
+
+
+class QuestionAnsweringRequest(BaseModel):
+    question: str = Field(
+        ...,
+        min_length=1,
+        description="Question to answer from the supplied context.",
+    )
+    context: str = Field(
+        ...,
+        min_length=1,
+        description="Context passage that contains the answer.",
+    )
+
+
+class QuestionAnsweringResult(BaseModel):
+    answer: str
+    score: float
+    start: int
+    end: int
+
+
+class QuestionAnsweringResponse(BaseModel):
+    video: str
+    concept: str
+    task: str
+    model: str
+    question: str
+    context: str
+    result: QuestionAnsweringResult
+
+
+
 
 
 
@@ -229,6 +280,27 @@ def run_named_entity_recognition(payload: NerRequest) -> NerResponse:
         model=settings.ner_model_id,
         text=cleaned_text,
         results=results,
+    )
+
+
+@router.post("/question-answering", response_model=QuestionAnsweringResponse)
+def run_question_answering(payload: QuestionAnsweringRequest) -> QuestionAnsweringResponse:
+    cleaned_question = payload.question.strip()
+    cleaned_context = payload.context.strip()
+
+    result = answer_question(
+        question=cleaned_question,
+        context=cleaned_context,
+    )
+
+    return QuestionAnsweringResponse(
+        video="002",
+        concept="pipeline",
+        task="question-answering",
+        model=settings.question_answering_model_id,
+        question=cleaned_question,
+        context=cleaned_context,
+        result=result,
     )
 
 

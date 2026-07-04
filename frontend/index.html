@@ -40,6 +40,7 @@
         <button class="demo-tab" data-demo="text-generation">Text Generation</button>
         <button class="demo-tab" data-demo="fill-mask">Fill-Mask</button>
         <button class="demo-tab" data-demo="ner">Named Entity Recognition</button>
+        <button class="demo-tab" data-demo="question-answering">Question Answering</button>
       </div>
 
       <div class="model-details">
@@ -122,10 +123,22 @@ The model loaded successfully, but the results are just okay.</textarea>
 
       <div id="ner-demo" class="demo-panel">
         <label for="ner-text-input">Text for named entity recognition</label>
-        <textarea id="ner-text-input" rows="5">My name is Nathan and I am learning Hugging Face in Orange County, California.</textarea>
+        <textarea id="ner-text-input" rows="5">My name is Nathan and I am learning Hugging Face in the USA.</textarea>
 
         <div class="actions">
           <button id="run-ner-button">Extract Entities</button>
+        </div>
+      </div>
+
+      <div id="question-answering-demo" class="demo-panel">
+        <label for="question-answering-question-input">Question</label>
+        <textarea id="question-answering-question-input" rows="3">What library are we learning?</textarea>
+
+        <label for="question-answering-context-input">Context</label>
+        <textarea id="question-answering-context-input" rows="6">This demo project teaches Hugging Face Transformers using a local FastAPI backend and a browser frontend.</textarea>
+      
+        <div class="actions">
+          <button id="run-question-answering-button">Answer Question</button>
         </div>
       </div>
 

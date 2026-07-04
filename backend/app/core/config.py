@@ -36,6 +36,10 @@ class Settings:
         "NER_MODEL_ID",
         "/home/mlops/Downloads/huggingface-models/repos/dslim/bert-base-NER",
     )
+    question_answering_model_id: str = os.getenv(
+        "QUESTION_ANSWERING_MODEL_ID",
+        "/home/mlops/Downloads/huggingface-models/repos/deepset/roberta-base-squad2",
+    )
 
 
 settings = Settings()

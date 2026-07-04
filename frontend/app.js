@@ -34,10 +34,16 @@ const nerDemo = document.querySelector("#ner-demo");
 const nerTextInput = document.querySelector("#ner-text-input");
 const runNerButton = document.querySelector("#run-ner-button");
 
+const questionAnsweringDemo = document.querySelector("#question-answering-demo");
+const questionAnsweringQuestionInput = document.querySelector("#question-answering-question-input");
+const questionAnsweringContextInput = document.querySelector("#question-answering-context-input");
+const runQuestionAnsweringButton = document.querySelector("#run-question-answering-button");
+
+
 
 const demoMetadata = {
   sentiment: {
-    title: "Sentiment Analysis",
+    title: "Sentiment Analysis (aka Text Classification)",
     pipelineCall: 'pipeline("sentiment-analysis")',
     modelUsed: "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
     runtime:
@@ -69,7 +75,7 @@ const demoMetadata = {
     runtime: "Runs locally through the FastAPI backend using the downloaded DistilBERT base model.",
     placeholder: "",
   },
-  ner: {
+  "ner": {
     title: "Named Entity Recognition",
     pipelineCall: 'pipeline("ner", grouped_entities=True)',
     modelUsed: "dslim/bert-base-NER",
@@ -77,6 +83,13 @@ const demoMetadata = {
       "When implemented, the user will submit text. The backend will identify entities such as people, organizations, and locations.",
     placeholder:
       "Named entity recognition will be implemented after text generation. The backend will group detected entity tokens into readable spans.",
+  },
+  "question-answering": {
+    title: "Question Answering",
+    pipelineCall: 'pipeline("question-answering")',
+    modelUsed: "deepset/roberta-base-squad2",
+    runtime: "Runs locally through the FastAPI backend using the downloaded RoBERTa SQuAD2 model. The backend uses the tokenizer and model directly because this installed Transformers version does not register pipeline(\"question-answering\").",
+    placeholder: "",
   },
 };
 
@@ -104,6 +117,7 @@ function setActiveDemo(demoName) {
   textGenerationDemo.classList.remove("active");
   fillMaskDemo.classList.remove("active");
   nerDemo.classList.remove("active");
+  questionAnsweringDemo.classList.remove("active");
   placeholderDemo.classList.remove("active");
 
   if (demoName === "sentiment") {
@@ -116,6 +130,8 @@ function setActiveDemo(demoName) {
     fillMaskDemo.classList.add("active");
   } else if (demoName === "ner") {
     nerDemo.classList.add("active");
+  } else if (demoName === "question-answering") {
+    questionAnsweringDemo.classList.add("active");
   } else {
     placeholderDemo.classList.add("active");
     placeholderText.textContent = metadata.placeholder;
@@ -323,6 +339,49 @@ async function runVideo002NerDemo() {
 
 
 
+async function runVideo002QuestionAnsweringDemo() {
+  const question = questionAnsweringQuestionInput.value.trim();
+  const context = questionAnsweringContextInput.value.trim();
+
+  if (question.length === 0) {
+    resultOutput.textContent = "Please enter a question.";
+    return;
+  }
+
+  if (context.length === 0) {
+    resultOutput.textContent = "Please enter context.";
+    return;
+  }
+
+  runQuestionAnsweringButton.disabled = true;
+  resultOutput.textContent = "Answering question...";
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/video-002/pipeline-function/question-answering`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        question,
+        context,
+      }),
+    });
+
+    const data = await response.json();
+
+    resultOutput.textContent = JSON.stringify(data, null, 2);
+  } catch (error) {
+    resultOutput.textContent = `Request failed: ${error}`;
+  } finally {
+    runQuestionAnsweringButton.disabled = false;
+  }
+}
+
+
+
+
+
 
 runDemoButton.addEventListener("click", runVideo002SentimentDemo);
 
@@ -338,6 +397,7 @@ runFillMaskButton.addEventListener("click", runVideo002FillMaskDemo);
 
 runNerButton.addEventListener("click", runVideo002NerDemo);
 
+runQuestionAnsweringButton.addEventListener("click", runVideo002QuestionAnsweringDemo);
 
 
 setActiveDemo("sentiment");
