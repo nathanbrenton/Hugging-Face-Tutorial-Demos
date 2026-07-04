@@ -19,8 +19,8 @@
     </header>
 
     <section class="card">
-      <label for="demo-select">Select demo</label>
-      <select id="demo-select">
+      <label for="video-select">Select video</label>
+      <select id="video-select">
         <option value="video-002-pipeline-function">002 - The pipeline function</option>
       </select>
     </section>
@@ -29,19 +29,52 @@
       <h2>002 - The pipeline function</h2>
 
       <p>
-        This demo sends one or more text inputs to a local FastAPI backend.
-        The backend uses Hugging Face's <code>pipeline("sentiment-analysis")</code>
-        function and returns structured prediction objects.
+        This video introduces the Hugging Face <code>pipeline()</code> function.
+        A pipeline provides a high-level interface that handles preprocessing,
+        model inference, and postprocessing for common NLP tasks.
       </p>
 
-      <label for="text-input">Texts to analyze</label>
-      <textarea id="text-input" rows="8">I love learning Hugging Face. This is starting to make sense.
+      <div class="demo-tabs" aria-label="Video 002 demos">
+        <button class="demo-tab active" data-demo="sentiment">Sentiment Analysis</button>
+        <button class="demo-tab" data-demo="zero-shot">Zero-Shot Classification</button>
+        <button class="demo-tab" data-demo="text-generation">Text Generation</button>
+        <button class="demo-tab" data-demo="ner">Named Entity Recognition</button>
+      </div>
+
+      <div class="model-details">
+        <h3 id="demo-title">Sentiment Analysis</h3>
+
+        <dl>
+          <dt>Pipeline call</dt>
+          <dd id="pipeline-call">pipeline("sentiment-analysis")</dd>
+
+          <dt>Model used</dt>
+          <dd id="model-used">distilbert/distilbert-base-uncased-finetuned-sst-2-english</dd>
+
+          <dt>When the model runs</dt>
+          <dd id="model-runtime">
+            When the user clicks Analyze Text, the browser sends text to the local FastAPI backend.
+            The backend runs the local Hugging Face model and returns structured JSON results.
+          </dd>
+        </dl>
+      </div>
+
+      <div id="sentiment-demo" class="demo-panel active">
+        <label for="text-input">Texts to analyze</label>
+        <textarea id="text-input" rows="8">I love learning Hugging Face. This is starting to make sense.
 The setup was confusing and I got stuck for an hour.
 The model loaded successfully, but the results are just okay.</textarea>
 
-      <div class="actions">
-        <button id="run-demo-button">Analyze Text</button>
-        <button id="clear-button" class="secondary">Clear Output</button>
+        <div class="actions">
+          <button id="run-demo-button">Analyze Text</button>
+          <button id="clear-button" class="secondary">Clear Output</button>
+        </div>
+      </div>
+
+      <div id="placeholder-demo" class="demo-panel">
+        <p id="placeholder-text">
+          Select a demo to see its input form.
+        </p>
       </div>
     </section>
 
