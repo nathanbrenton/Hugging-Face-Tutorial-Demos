@@ -15,6 +15,11 @@ const clearButton = document.querySelector("#clear-button");
 const textInput = document.querySelector("#text-input");
 const resultOutput = document.querySelector("#result-output");
 
+const zeroShotDemo = document.querySelector("#zero-shot-demo");
+const zeroShotTextInput = document.querySelector("#zero-shot-text-input");
+const zeroShotLabelsInput = document.querySelector("#zero-shot-labels-input");
+const runZeroShotButton = document.querySelector("#run-zero-shot-button");
+
 const demoMetadata = {
   sentiment: {
     title: "Sentiment Analysis",
@@ -72,11 +77,15 @@ function setActiveDemo(demoName) {
   modelUsed.textContent = metadata.modelUsed;
   modelRuntime.textContent = metadata.runtime;
 
+  sentimentDemo.classList.remove("active");
+  zeroShotDemo.classList.remove("active");
+  placeholderDemo.classList.remove("active");
+
   if (demoName === "sentiment") {
     sentimentDemo.classList.add("active");
-    placeholderDemo.classList.remove("active");
+  } else if (demoName === "zero-shot") {
+    zeroShotDemo.classList.add("active");
   } else {
-    sentimentDemo.classList.remove("active");
     placeholderDemo.classList.add("active");
     placeholderText.textContent = metadata.placeholder;
     resultOutput.textContent = "This demo is documented in the UI and will be wired to the backend next.";
@@ -119,10 +128,58 @@ demoTabs.forEach((tab) => {
   });
 });
 
+function parseLabels(rawText) {
+  return rawText
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+}
+
+async function runVideo002ZeroShotDemo() {
+  const text = zeroShotTextInput.value.trim();
+  const candidateLabels = parseLabels(zeroShotLabelsInput.value);
+
+  if (text.length === 0) {
+    resultOutput.textContent = "Please enter text to classify.";
+    return;
+  }
+
+  if (candidateLabels.length < 2) {
+    resultOutput.textContent = "Please enter at least two candidate labels.";
+    return;
+  }
+
+  runZeroShotButton.disabled = true;
+  resultOutput.textContent = "Running zero-shot classification...";
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/video-002/pipeline-function/zero-shot-classification`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text,
+        candidate_labels: candidateLabels,
+      }),
+    });
+
+    const data = await response.json();
+
+    resultOutput.textContent = JSON.stringify(data, null, 2);
+  } catch (error) {
+    resultOutput.textContent = `Request failed: ${error}`;
+  } finally {
+    runZeroShotButton.disabled = false;
+  }
+}
+
 runDemoButton.addEventListener("click", runVideo002SentimentDemo);
 
 clearButton.addEventListener("click", () => {
   resultOutput.textContent = "Run the demo to see results here.";
 });
+
+runZeroShotButton.addEventListener("click", runVideo002ZeroShotDemo);
 
 setActiveDemo("sentiment");

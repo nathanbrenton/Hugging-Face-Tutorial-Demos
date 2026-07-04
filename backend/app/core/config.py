@@ -20,6 +20,18 @@ class Settings:
         "SENTIMENT_MODEL_ID",
         "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
     )
+    zero_shot_model_id: str = os.getenv(
+        "ZERO_SHOT_MODEL_ID",
+        "/home/mlops/Downloads/huggingface-models/repos/facebook/bart-large-mnli",
+    )
+    text_generation_model_id: str = os.getenv(
+        "TEXT_GENERATION_MODEL_ID",
+        "/home/mlops/Downloads/huggingface-models/repos/distilbert/distilgpt2",
+    )
+    ner_model_id: str = os.getenv(
+        "NER_MODEL_ID",
+        "/home/mlops/Downloads/huggingface-models/repos/dslim/bert-base-NER",
+    )
 
 
 settings = Settings()

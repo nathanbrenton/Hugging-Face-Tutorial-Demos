@@ -71,11 +71,28 @@ The model loaded successfully, but the results are just okay.</textarea>
         </div>
       </div>
 
+      <div id="zero-shot-demo" class="demo-panel">
+        <label for="zero-shot-text-input">Text to classify</label>
+        <textarea id="zero-shot-text-input" rows="5">This course teaches people how to build machine learning applications with Transformers.</textarea>
+      
+        <label for="zero-shot-labels-input">Candidate labels</label>
+        <textarea id="zero-shot-labels-input" rows="4">education
+      politics
+      sports
+      finance
+      technology</textarea>
+
+        <div class="actions">
+          <button id="run-zero-shot-button">Classify Text</button>
+        </div>
+      </div>
+
       <div id="placeholder-demo" class="demo-panel">
         <p id="placeholder-text">
           Select a demo to see its input form.
         </p>
       </div>
+
     </section>
 
     <section class="card">
